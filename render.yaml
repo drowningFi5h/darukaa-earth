@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: darukaa-earth
+    runtime: docker
+    plan: free
+    autoDeployTrigger: off
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
+      - key: COOKIE_SECURE
+        value: 'true'
+      - key: VITE_MAPBOX_TOKEN
+        sync: false

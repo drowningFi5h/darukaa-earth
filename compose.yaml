@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_USER: darukaa
+      POSTGRES_PASSWORD: darukaa
+      POSTGRES_DB: darukaa
+    ports:
+      - '127.0.0.1:5433:5432'
+    volumes:
+      - darukaa-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U darukaa -d darukaa']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+volumes:
+  darukaa-db:

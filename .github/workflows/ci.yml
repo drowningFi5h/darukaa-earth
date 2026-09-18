@@ -1,0 +1,57 @@
+name: Quality and deployment
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: darukaa
+          POSTGRES_PASSWORD: darukaa
+          POSTGRES_DB: darukaa
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U darukaa -d darukaa"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    env:
+      DATABASE_URL: postgresql+psycopg://darukaa:darukaa@localhost:5433/darukaa
+      JWT_SECRET: ci-only-secret-not-for-production-123456789
+      DEMO_PASSWORD: ci-demo-password-12345
+      APP_ORIGIN: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.22'
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run lint && npm run format:check && npm run build
+      - run: uv sync --project backend --frozen
+      - run: uv run --project backend ruff check backend && uv run --project backend ruff format --check backend
+      - run: uv run alembic upgrade head && uv run pytest -q
+        working-directory: backend
+  deploy:
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy verified commit
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::warning::Deployment pending: configure RENDER_DEPLOY_HOOK_URL"
+            exit 0
+          fi
+          curl --fail --silent --show-error --request POST "${DEPLOY_HOOK}&ref=${GITHUB_SHA}"
+          echo "Requested deployment of ${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"

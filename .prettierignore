@@ -1,0 +1,7 @@
+package-lock.json
+uv.lock
+frontend/dist
+tmp
+output
+.venv
+node_modules

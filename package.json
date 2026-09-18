@@ -1,0 +1,33 @@
+{
+  "name": "darukaa-earth",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.0",
+    "prettier": "^3.6.2",
+    "@playwright/test": "^1.55.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --config frontend/eslint.config.js --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md,yml,yaml,html}": "prettier --write",
+    "*.py": [
+      "uv run --project backend ruff check --fix",
+      "uv run --project backend ruff format"
+    ]
+  }
+}
