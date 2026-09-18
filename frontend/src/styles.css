@@ -192,8 +192,9 @@ section[id] {
   top: 12px;
 }
 .hero {
-  height: min(900px, 95svh);
-  min-height: 690px;
+  display: flex;
+  flex-direction: column;
+  min-height: max(690px, min(900px, 95svh));
   position: relative;
   color: var(--cream);
   background: #172b22;
@@ -231,7 +232,8 @@ section[id] {
 }
 .hero-copy {
   position: relative;
-  padding: 70px 8% 85px;
+  width: 100%;
+  padding: 70px 8% 48px;
   max-width: 850px;
 }
 .hero-kicker {
@@ -265,10 +267,10 @@ section[id] {
   max-width: 420px;
 }
 .hero-bottom {
-  position: absolute;
-  bottom: 28px;
-  left: 5.5%;
-  right: 5.5%;
+  position: relative;
+  margin: auto 5.5% 0;
+  padding-bottom: 28px;
+  gap: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1345,9 +1347,6 @@ input[aria-invalid='true'] {
   .hero-copy {
     padding-top: 100px;
   }
-  .hero {
-    max-height: 940px;
-  }
   .dashboard-map {
     height: 470px;
   }
@@ -1584,9 +1583,7 @@ input[aria-invalid='true'] {
 }
 @media (max-width: 620px) {
   .hero {
-    min-height: 730px;
-    height: 94svh;
-    max-height: 850px;
+    min-height: max(730px, 94svh);
   }
   .landing-nav {
     padding: 24px 6%;
@@ -1601,7 +1598,7 @@ input[aria-invalid='true'] {
     font-size: 19px;
   }
   .hero-copy {
-    padding: 83px 8% 100px;
+    padding: 83px 8% 48px;
   }
   .hero h1 {
     font-size: 78px;
@@ -1623,7 +1620,7 @@ input[aria-invalid='true'] {
   }
   .hero-bottom {
     font-size: 8px;
-    bottom: 20px;
+    padding-bottom: 20px;
   }
   .hero-bottom > span:last-child {
     display: none;
