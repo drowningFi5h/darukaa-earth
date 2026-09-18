@@ -72,11 +72,11 @@ uv run pytest -q
 
 Integration tests require actual PostGIS. Test-created records run inside a rollback transaction using savepoints. They cover sessions, persistence, geodesic area, access isolation, demo restrictions, invalid geometry, duplicate accounts, and origin checks. `scripts/browser_check.py` verifies the demo, charts, and responsive layouts using Python Playwright and captures screenshots.
 
-Husky installs during npm ci. lint-staged formats/lints staged frontend and documentation files and runs Ruff on staged Python. CI independently runs checks on PRs and main pushes using locked dependencies and a PostGIS service container. Only successful main-branch checks trigger deployment of the tested Git SHA via the secret RENDER_DEPLOY_HOOK_URL.
+Husky installs during npm ci. lint-staged formats/lints staged frontend and documentation files and runs Ruff on staged Python. CI independently runs checks on PRs and main pushes using locked dependencies and a PostGIS service container. Only successful main-branch checks trigger deployment of the tested Git SHA via a deploy hook when configured, otherwise the authenticated Render deploy API. The job waits for the release to become live and fails if the build or startup fails.
 
 ## Deployment
 
-Create a free Render Docker service connected to this private repo, or use render.yaml. Set the environment variables above, APP_ORIGIN to the actual HTTPS URL, COOKIE_SECURE=true, and the health path to /api/health. Disable Render auto-deploys to prevent bypassing CI. Add its secret deploy hook to GitHub Actions as RENDER_DEPLOY_HOOK_URL. If missing, CI reports deployment as pending.
+Create a free Render Docker service connected to this private repo, or use render.yaml. Set the environment variables above, APP_ORIGIN to the actual HTTPS URL, COOKIE_SECURE=true, and the health path to /api/health. Disable Render auto-deploys to prevent bypassing CI. Configure GitHub secrets RENDER_API_KEY and RENDER_SERVICE_ID. An optional RENDER_DEPLOY_HOOK_URL is used in preference to the deploy API; the API credentials also verify deployment status. Render does not expose deploy-hook retrieval through its public API, so this submission uses the authenticated API.
 
 The Docker build receives VITE_MAPBOX_TOKEN as a build argument. Startup applies migrations and runs the idempotent seed before Uvicorn. A dedicated migration job would be needed for multiple instances. Free Render services sleep after inactivity; first access can take time. Neon can suspend idle compute too. Restrict the Mapbox token to the deployed URL and localhost. A missing map token shows an honest configuration state, never a fake basemap.
 
