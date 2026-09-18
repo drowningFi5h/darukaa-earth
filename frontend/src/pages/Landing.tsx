@@ -245,7 +245,7 @@ export default function Landing() {
         </div>
         <img
           src="/images/coast.webp"
-          alt="A peaceful green coastal landscape"
+          alt="Ocean waves under a pale sky"
           width="900"
           height="650"
           loading="lazy"

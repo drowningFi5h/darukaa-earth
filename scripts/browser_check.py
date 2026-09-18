@@ -1,17 +1,24 @@
+import os
+import sys
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
 out = Path("output/submission/screenshots")
 out.mkdir(parents=True, exist_ok=True)
+base = os.environ.get("BASE_URL", "http://localhost:5173")
 with sync_playwright() as p:
-    browser = p.chromium.launch(channel="msedge", headless=True)
+    browser = p.chromium.launch(
+        channel=os.environ.get("BROWSER_CHANNEL")
+        or ("msedge" if sys.platform == "win32" else None),
+        headless=True,
+    )
     page = browser.new_page(
         viewport={"width": 1440, "height": 1000}, device_scale_factor=1
     )
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
-    page.goto("http://localhost:5173", wait_until="networkidle")
+    page.goto(base, wait_until="networkidle")
     page.screenshot(path=str(out / "landing-desktop.png"), full_page=True)
     page.get_by_role("button", name="Explore the platform", exact=True).click()
     page.wait_for_url("**/app")
@@ -21,7 +28,7 @@ with sync_playwright() as p:
     )
     page.wait_for_timeout(6000)
     page.screenshot(path=str(out / "workspace-desktop.png"), full_page=True)
-    print("map errors:", page.locator(".map-error").all_text_contents())
+    assert not page.locator(".map-error").count(), "Map failed to load"
     page.get_by_role("button", name="Riverbank forest", exact=False).click()
     page.get_by_role("button", name="Carbon removal", exact=True).wait_for(
         timeout=15000
@@ -37,9 +44,10 @@ with sync_playwright() as p:
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (
             f"overflow at {width}"
         )
-    page.goto("http://localhost:5173", wait_until="networkidle")
+    page.goto(base, wait_until="networkidle")
     page.set_viewport_size({"width": 390, "height": 844})
     page.screenshot(path=str(out / "landing-mobile.png"), full_page=True)
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-    print("browser errors:", errors)
+    assert not errors, errors
+    print("PASS live demo, charts, map, and responsive layouts")
     browser.close()

@@ -1,16 +1,27 @@
 # Submission checklist
 
-- [x] React frontend, Python API, and PostGIS schema implemented
-- [x] Demo data seeded on Neon
-- [x] Four agreed frontend skills installed locally
-- [x] Private repository created: https://github.com/drowningFi5h/darukaa-earth
-- [ ] Integration and browser verification complete
-- [ ] CI passing
-- [ ] Public deployment verified
-- [ ] Word document rendered and reviewed
-- [ ] Reviewer access granted
-- [ ] Uploaded through the applied-job page
+Verified live application: https://darukaa-earth-gbph.onrender.com
+Private source repository: https://github.com/drowningFi5h/darukaa-earth
 
-## Reviewer access
+- [x] React frontend, Python API, and PostGIS schema implemented
+- [x] Three projects, six sites, and twelve months of sample data seeded on Neon
+- [x] Four agreed frontend skills installed locally
+- [x] Private repository with lockfiles, migrations, hooks, and deployment configuration
+- [x] Seven backend integration tests pass against actual PostGIS
+- [x] Live registration, project creation, drawing, save/reload, editing, and logout verified
+- [x] Live demo login, chart switching, and 390/768/1440 layouts verified
+- [x] GitHub Actions checks and CI-gated deployment pass
+- [x] Public HTTPS deployment and database health verified
+- [x] Landing, workspace, and analytics screenshots captured from live application
+- [ ] Word document rendered and reviewed
+
+The exact tested commit and release status are recorded in the GitHub Actions deployment summary. Render automatic deployments are disabled; only successful main-branch checks trigger release. Free hosting may need time to wake after inactivity.
+
+## Separate submission actions
+
+- [ ] Grant private repository access to the reviewers
+- [ ] Upload the Word document through the applied-job page
 
 Confirm GitHub usernames for ankita.dasgupta@darukaa.com, harsh.kumar@darukaa.com, utkarsh.gauniyal@darukaa.com, and guneet.mutreja@darukaa.com before inviting them. No invitations or job-portal submission have been sent.
+
+The Word document includes verified demo credentials and live/repository links. Generated deliverables are in output/submission and are excluded from Git. Application secrets remain in environment settings.

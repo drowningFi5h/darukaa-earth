@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "test:e2e": "playwright test"
+    "test:e2e": "uv run --project backend --with playwright python scripts/browser_check.py"
   },
   "devDependencies": {
     "husky": "^9.1.7",

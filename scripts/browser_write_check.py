@@ -1,3 +1,5 @@
+import os
+import sys
 import uuid
 from pathlib import Path
 
@@ -5,10 +7,15 @@ from playwright.sync_api import sync_playwright
 
 email = f"ui-{uuid.uuid4()}@example.com"
 Path("tmp/browser-test-user.txt").write_text(email)
+base = os.environ.get("BASE_URL", "http://localhost:5173")
 with sync_playwright() as p:
-    browser = p.chromium.launch(channel="msedge", headless=True)
+    browser = p.chromium.launch(
+        channel=os.environ.get("BROWSER_CHANNEL")
+        or ("msedge" if sys.platform == "win32" else None),
+        headless=True,
+    )
     page = browser.new_page(viewport={"width": 1440, "height": 1000})
-    page.goto("http://localhost:5173/register", wait_until="networkidle")
+    page.goto(base + "/register", wait_until="networkidle")
     page.get_by_label("Your name", exact=True).fill("Interface verification")
     page.get_by_label("Email address", exact=True).fill(email)
     page.get_by_label("Password", exact=True).fill("Browser-test-12345")

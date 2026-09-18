@@ -4,6 +4,8 @@ A nature-led geospatial workspace for carbon and biodiversity projects. React an
 
 ## Review
 
+Live application: https://darukaa-earth-gbph.onrender.com
+
 Choose **Explore the platform** for the read-only demo. Register to create your own projects and draw site boundaries. The demo contains synthetic observations, not verified environmental outcomes. Deployment and verification status are recorded in `docs/SUBMISSION.md`.
 
 ## Architecture
@@ -70,7 +72,7 @@ cd backend
 uv run pytest -q
 ```
 
-Integration tests require actual PostGIS. Test-created records run inside a rollback transaction using savepoints. They cover sessions, persistence, geodesic area, access isolation, demo restrictions, invalid geometry, duplicate accounts, and origin checks. `scripts/browser_check.py` verifies the demo, charts, and responsive layouts using Python Playwright and captures screenshots.
+Integration tests require actual PostGIS. Test-created records run inside a rollback transaction using savepoints. They cover sessions, persistence, geodesic area, access isolation, demo restrictions, invalid geometry, duplicate accounts, and origin checks. `scripts/browser_check.py` verifies the demo, charts, and responsive layouts using Python Playwright and captures screenshots. Run `npm run test:e2e`; set BASE_URL to test the deployed service. Browser checks use Microsoft Edge on Windows or installed Playwright Chromium elsewhere. `scripts/browser_write_check.py` exercises real drawing and persistence; `scripts/cleanup_browser_tests.py` removes only the specifically named verification accounts.
 
 Husky installs during npm ci. lint-staged formats/lints staged frontend and documentation files and runs Ruff on staged Python. CI independently runs checks on PRs and main pushes using locked dependencies and a PostGIS service container. Only successful main-branch checks trigger deployment of the tested Git SHA via a deploy hook when configured, otherwise the authenticated Render deploy API. The job waits for the release to become live and fails if the build or startup fails.
 
