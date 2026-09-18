@@ -1,12 +1,12 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
 import { Brand } from '../components/Brand';
 import { Button } from '../components/ui/button';
-import { post, type User } from '../lib/api';
+import { api, openWorkspace, post, type User } from '../lib/api';
 const schema = z.object({
   name: z.string().max(100).optional(),
   email: z.email('Enter a valid email address'),
@@ -16,6 +16,7 @@ type Values = z.infer<typeof schema>;
 export default function Auth({ register = false }: { register?: boolean }) {
   const navigate = useNavigate(),
     cache = useQueryClient();
+  const me = useQuery({ queryKey: ['me'], queryFn: () => api<User>('/auth/me'), retry: false });
   const {
     register: field,
     handleSubmit,
@@ -31,7 +32,9 @@ export default function Auth({ register = false }: { register?: boolean }) {
     mutationFn: (values: Values) => post<User>(register ? '/auth/register' : '/auth/login', values),
     onSuccess: success,
   });
-  const demo = useMutation({ mutationFn: () => post<User>('/auth/demo'), onSuccess: success });
+  const demo = useMutation({ mutationFn: openWorkspace, onSuccess: success });
+  if (me.isPending) return <div className="page-loading">Checking your session�</div>;
+  if (me.data) return <Navigate to="/app" replace />;
   return (
     <div className="auth-page">
       <div className="auth-visual">

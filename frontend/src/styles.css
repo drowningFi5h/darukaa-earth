@@ -207,12 +207,14 @@ section[id] {
   object-position: center 55%;
 }
 .hero-shade {
+  pointer-events: none;
   background:
     linear-gradient(90deg, rgba(8, 24, 15, 0.78), rgba(12, 29, 19, 0.2) 70%),
     linear-gradient(0deg, rgba(8, 24, 15, 0.6), transparent 30%);
 }
 .landing-nav {
   position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2051,5 +2053,78 @@ select {
   }
   .project-item {
     min-width: 245px;
+  }
+}
+
+/* Clear interaction cues, using the existing forest and cream palette. */
+a {
+  cursor: pointer;
+}
+.brand {
+  width: fit-content;
+  border-radius: 8px;
+  transition:
+    color 0.18s,
+    background-color 0.18s,
+    box-shadow 0.18s;
+}
+.brand:hover,
+.brand:focus-visible {
+  background-color: #9aab7826;
+  box-shadow: 0 0 0 8px #9aab7826;
+}
+.landing-nav nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 22px;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
+}
+.landing-nav nav a:hover,
+.landing-nav nav a:focus-visible {
+  color: #fffaf0;
+  background-color: #ffffff20;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.hero-bottom a:hover,
+.hero-bottom a:focus-visible {
+  color: var(--forest);
+  background-color: var(--cream);
+  border-color: var(--cream);
+}
+.footer a:hover,
+.footer a:focus-visible {
+  color: #e0ebc8;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+@media (max-width: 620px) {
+  .landing-nav {
+    flex-wrap: wrap;
+    gap: 18px 12px;
+  }
+  .landing-nav nav {
+    display: flex;
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .landing-nav nav a {
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  .hero-copy {
+    padding-top: 35px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand,
+  .landing-nav nav a {
+    transition: none;
   }
 }

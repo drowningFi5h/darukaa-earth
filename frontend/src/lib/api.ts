@@ -47,3 +47,13 @@ export const post = <T>(path: string, data?: unknown) =>
   api<T>(path, { method: 'POST', body: data ? JSON.stringify(data) : undefined });
 export const number = (value: number, digits = 0) =>
   new Intl.NumberFormat('en', { maximumFractionDigits: digits }).format(value);
+
+// Home and demo entry must never replace an existing authenticated session.
+export async function openWorkspace(): Promise<User> {
+  try {
+    return await api<User>('/auth/me');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return post<User>('/auth/demo');
+    throw error;
+  }
+}

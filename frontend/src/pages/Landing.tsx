@@ -1,10 +1,10 @@
 import { ArrowDown, ArrowRight, Leaf, ScanLine, Sprout, Trees, Waves } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'motion/react';
 import { Brand } from '../components/Brand';
 import { Button } from '../components/ui/button';
-import { post, type User } from '../lib/api';
+import { api, openWorkspace, type User } from '../lib/api';
 
 const projects = [
   {
@@ -29,8 +29,10 @@ const projects = [
 export default function Landing() {
   const navigate = useNavigate(),
     cache = useQueryClient();
+  const me = useQuery({ queryKey: ['me'], queryFn: () => api<User>('/auth/me'), retry: false });
+  const accountPath = me.data ? '/app' : '/register';
   const demo = useMutation({
-    mutationFn: () => post<User>('/auth/demo'),
+    mutationFn: openWorkspace,
     onSuccess: (user) => {
       cache.clear();
       cache.setQueryData(['me'], user);
@@ -60,8 +62,8 @@ export default function Landing() {
             <a href="#impact">Our impact</a>
           </nav>
           <Button asChild variant="cream" size="sm">
-            <Link to="/login">
-              Log in <ArrowRight size={15} />
+            <Link to={me.data ? '/app' : '/login'}>
+              {me.data ? 'My workspace' : 'Log in'} <ArrowRight size={15} />
             </Link>
           </Button>
         </header>
@@ -85,11 +87,15 @@ export default function Landing() {
             </p>
             <div className="hero-actions">
               <Button variant="cream" onClick={() => demo.mutate()} disabled={demo.isPending}>
-                {demo.isPending ? 'Opening demo…' : 'Explore the platform'}
+                {demo.isPending
+                  ? 'Opening workspace...'
+                  : me.data
+                    ? 'Return to workspace'
+                    : 'Explore the platform'}
                 <ArrowRight size={17} />
               </Button>
-              <Link to="/register" className="text-link light">
-                Create account
+              <Link to={accountPath} className="text-link light">
+                {me.data ? `Signed in as ${me.data.name}` : 'Create account'}
               </Link>
             </div>
             {demo.error && (
@@ -138,8 +144,8 @@ export default function Landing() {
               <p>Turn scattered observations into a clearer picture.</p>
             </div>
           </div>
-          <Link to="/register" className="text-link">
-            Start your first project <ArrowRight size={17} />
+          <Link to={accountPath} className="text-link">
+            {me.data ? 'Open your projects' : 'Start your first project'} <ArrowRight size={17} />
           </Link>
         </div>
         <div className="approach-image">
@@ -238,8 +244,9 @@ export default function Landing() {
             starts <em>with the land.</em>
           </h2>
           <Button asChild>
-            <Link to="/register">
-              Create your workspace <ArrowRight size={17} />
+            <Link to={accountPath}>
+              {me.data ? 'Return to your workspace' : 'Create your workspace'}{' '}
+              <ArrowRight size={17} />
             </Link>
           </Button>
         </div>
@@ -256,7 +263,7 @@ export default function Landing() {
         <p>Care for the land. Understand the change.</p>
         <div>
           <a href="#approach">Our approach</a>
-          <Link to="/login">Workspace</Link>
+          <Link to={me.data ? '/app' : '/login'}>Workspace</Link>
           <a href="/credits">Photo credits</a>
         </div>
         <small>© {new Date().getFullYear()} Darukaa Earth · Hackathon demonstration</small>
