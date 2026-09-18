@@ -1916,3 +1916,140 @@ input[aria-invalid='true'] {
     transform: none;
   }
 }
+/* Readable editorial and workspace detail at normal display scale. */
+.landing-nav nav,
+.hero-description,
+.approach-copy > p:not(.section-label),
+.section-heading > p,
+.approach-image p {
+  font-size: 14px;
+}
+.hero-kicker,
+.hero-bottom,
+.principles p,
+.landscape-copy p,
+.impact-stat span,
+.footer,
+.sample-note {
+  font-size: 12px;
+}
+.section-label,
+.landscape-copy > span:first-child,
+.footer small {
+  font-size: 11px;
+}
+.button,
+.text-link,
+.principles h3 {
+  font-size: 13px;
+}
+.button-small {
+  font-size: 12px;
+}
+.workspace-top,
+.workspace-label,
+.project-kind,
+.project-pane-bottom,
+.workspace-footnote,
+.summary-strip span,
+.profile small {
+  font-size: 11px;
+}
+.sidebar nav a,
+.profile strong,
+.dashboard-heading p:last-child,
+.demo-banner,
+.search-field input,
+.project-item p,
+.map-heading p,
+.site-list small {
+  font-size: 12px;
+}
+.project-item h3,
+.site-list > button > span,
+.pane-title h2,
+.map-heading h2 {
+  font-size: 13px;
+}
+.project-item {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.project-item > img {
+  height: 68px;
+}
+.project-pane > .button {
+  margin: 0 16px 10px;
+  justify-content: flex-start;
+  border-radius: 5px;
+}
+.project-pane > .button[aria-pressed='true'] {
+  background: #eaf0df;
+}
+.auth-form > p,
+.auth-form .auth-switch,
+.dialog-description,
+label,
+input,
+textarea,
+select {
+  font-size: 13px;
+}
+.field-hint,
+.field-error,
+.auth-divider,
+.auth-main > small,
+.site-detail-label,
+.analytics-summary span,
+.segmented button,
+.data-table {
+  font-size: 12px;
+}
+.data-table table {
+  font-size: 12px;
+}
+@media (max-width: 620px) {
+  .hero-description,
+  .approach-copy > p:not(.section-label) {
+    font-size: 13px;
+  }
+  .hero-bottom {
+    font-size: 10px;
+  }
+  .principles p {
+    font-size: 11px;
+  }
+  .section-label {
+    font-size: 10px;
+  }
+  .workspace-top {
+    font-size: 10px;
+  }
+  .dashboard-heading .section-label {
+    font-size: 9px;
+  }
+  .summary-strip span {
+    font-size: 10px;
+  }
+  .dashboard-heading > .button {
+    font-size: 11px;
+  }
+  .demo-banner {
+    font-size: 11px;
+  }
+  .map-heading h2 {
+    font-size: 12px;
+  }
+  .map-heading p {
+    font-size: 11px;
+  }
+  .map-heading .button {
+    font-size: 10px;
+  }
+  .workspace-footnote {
+    font-size: 10px;
+  }
+  .project-item {
+    min-width: 245px;
+  }
+}

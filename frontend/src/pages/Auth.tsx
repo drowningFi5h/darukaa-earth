@@ -91,6 +91,7 @@ export default function Auth({ register = false }: { register?: boolean }) {
               Password
               <input
                 type="password"
+                aria-label="Password"
                 autoComplete={register ? 'new-password' : 'current-password'}
                 {...field('password')}
                 aria-invalid={!!errors.password}

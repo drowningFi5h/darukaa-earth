@@ -32,6 +32,7 @@ export default function Landing() {
   const demo = useMutation({
     mutationFn: () => post<User>('/auth/demo'),
     onSuccess: (user) => {
+      cache.clear();
       cache.setQueryData(['me'], user);
       navigate('/app');
     },

@@ -16,7 +16,7 @@ const Credits = lazy(() => import('./pages/Credits'));
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30000, refetchOnWindowFocus: false } },
 });
-function ScrollReset() {
+export function ScrollReset() {
   const { pathname } = useLocation();
   React.useEffect(() => {
     window.scrollTo(0, 0);

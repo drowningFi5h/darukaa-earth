@@ -94,6 +94,7 @@ function SiteForm({
   const cache = useQueryClient(),
     [name, setName] = useState(site?.name || ''),
     [geometry, setGeometry] = useState<Polygon | null>(site?.geometry || null),
+    [mapVersion, setMapVersion] = useState(0),
     [geoText, setGeoText] = useState(site ? JSON.stringify(site.geometry) : ''),
     [error, setError] = useState('');
   useEffect(() => {
@@ -156,7 +157,8 @@ function SiteForm({
           <SiteMap
             sites={EMPTY_SITES}
             editing
-            initial={site?.geometry}
+            key={mapVersion}
+            initial={geometry || undefined}
             onGeometry={(g) => {
               setGeometry(g);
               setGeoText(g ? JSON.stringify(g) : '');
@@ -185,8 +187,16 @@ function SiteForm({
           onClick={() => {
             try {
               const parsed = JSON.parse(geoText);
-              if (parsed.type !== 'Polygon') throw new Error();
+              if (
+                parsed.type !== 'Polygon' ||
+                !Array.isArray(parsed.coordinates) ||
+                !Array.isArray(parsed.coordinates[0]) ||
+                parsed.coordinates[0].length < 4
+              )
+                throw new Error();
+              if (!Number.isFinite(area(parsed)) || area(parsed) <= 0) throw new Error();
               setGeometry(parsed);
+              setMapVersion((value) => value + 1);
               setError('');
             } catch {
               setError('Enter a GeoJSON geometry with type Polygon and coordinates.');
@@ -224,9 +234,16 @@ export default function Dashboard() {
   const projectId = params.get('project') || projects.data?.[0]?.id;
   const selectedProject = projects.data?.find((p) => p.id === projectId);
   const sites = useQuery({
-    queryKey: ['sites', projectId],
-    queryFn: () => api<Site[]>(`/projects/${projectId}/sites`),
-    enabled: !!selectedProject,
+    queryKey: ['sites', projectId, projects.data?.map((p) => p.id).join(',')],
+    queryFn: async () =>
+      projectId === 'all'
+        ? (
+            await Promise.all(
+              (projects.data || []).map((p) => api<Site[]>(`/projects/${p.id}/sites`)),
+            )
+          ).flat()
+        : api<Site[]>(`/projects/${projectId}/sites`),
+    enabled: !!selectedProject || (projectId === 'all' && !!projects.data?.length),
   });
   const selectedSite = sites.data?.find((s) => s.id === params.get('site'));
   const logout = useMutation({
@@ -372,6 +389,14 @@ export default function Dashboard() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setParams({ project: 'all' })}
+                aria-pressed={projectId === 'all'}
+              >
+                View all landscapes
+              </Button>
               <div className="project-list">
                 {projects.isPending ? (
                   <p role="status">Loading projects…</p>
@@ -425,7 +450,12 @@ export default function Dashboard() {
               <div className="map-heading">
                 <div>
                   <h2>{selectedProject?.name || 'Landscape explorer'}</h2>
-                  <p>{selectedProject?.description || 'Create a project to start mapping.'}</p>
+                  <p>
+                    {selectedProject?.description ||
+                      (projectId === 'all'
+                        ? 'Every project and site in your workspace.'
+                        : 'Create a project to start mapping.')}
+                  </p>
                 </div>
                 {selectedProject && (
                   <Button
@@ -444,7 +474,12 @@ export default function Dashboard() {
                   <SiteMap
                     sites={sites.data || EMPTY_SITES}
                     selected={selectedSite?.id}
-                    onSelect={(id) => setParams({ project: projectId!, site: id })}
+                    onSelect={(id) =>
+                      setParams({
+                        project: sites.data?.find((s) => s.id === id)?.project_id || projectId!,
+                        site: id,
+                      })
+                    }
                   />
                 </Suspense>
               </div>
@@ -455,7 +490,7 @@ export default function Dashboard() {
                   sites.data?.map((s) => (
                     <button
                       key={s.id}
-                      onClick={() => setParams({ project: projectId!, site: s.id })}
+                      onClick={() => setParams({ project: s.project_id, site: s.id })}
                     >
                       <MapPin size={17} />
                       <span>
