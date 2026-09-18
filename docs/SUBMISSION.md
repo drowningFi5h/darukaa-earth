@@ -13,7 +13,7 @@ Private source repository: https://github.com/drowningFi5h/darukaa-earth
 - [x] GitHub Actions checks and CI-gated deployment pass
 - [x] Public HTTPS deployment and database health verified
 - [x] Landing, workspace, and analytics screenshots captured from live application
-- [ ] Word document rendered and reviewed
+- [x] Two-page Word document rendered and visually reviewed
 
 The exact tested commit and release status are recorded in the GitHub Actions deployment summary. Render automatic deployments are disabled; only successful main-branch checks trigger release. Free hosting may need time to wake after inactivity.
 

@@ -87,7 +87,8 @@ para(
 )
 shot = output / "screenshots/workspace-desktop.png"
 if shot.exists():
-    doc.add_picture(str(shot), width=Inches(6.65))
+    doc.add_picture(str(shot), width=Inches(5.5))
+    doc.paragraphs[-1].alignment = 1
     p = doc.add_paragraph(
         "Landscape explorer with sample project boundaries and calculated site areas."
     )
@@ -145,5 +146,11 @@ para(
 doc.core_properties.title = "Darukaa Earth Project Submission"
 doc.core_properties.subject = "Full stack hackathon application and review instructions"
 doc.core_properties.author = "Tausif Ansari"
+for style in doc.styles:
+    for border in list(style.element.iter(qn("w:pBdr"))):
+        border.getparent().remove(border)
+for paragraph in doc.paragraphs:
+    for border in list(paragraph._p.iter(qn("w:pBdr"))):
+        border.getparent().remove(border)
 doc.save(output / "Darukaa_Earth_Submission.docx")
 print("Created submission Word document")
