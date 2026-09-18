@@ -68,7 +68,7 @@ para(
     "Darukaa Earth brings project management, mapped site boundaries, and monthly environmental observations into one workspace. This submission includes a React interface, a Python API, durable PostGIS storage, automated checks, and a reproducible sample dataset."
 )
 doc.add_heading("Review the application", 1)
-link("Private repository", metadata["repo"])
+link("Public repository", metadata["repo"])
 if metadata.get("live_verified"):
     link("Live application", metadata["live_url"])
 else:
@@ -138,7 +138,7 @@ para(
     "Explore the demo, select a project, and open a site to inspect carbon and biodiversity charts. Use View all landscapes to see every site. Register, create a project, add a site, draw and save a polygon, then reload and edit it. GeoJSON entry is available as a keyboard alternative."
 )
 para(
-    "Private repository access has not yet been granted. Confirm GitHub usernames for ankita.dasgupta@darukaa.com, harsh.kumar@darukaa.com, utkarsh.gauniyal@darukaa.com, and guneet.mutreja@darukaa.com, then invite them before submitting this document through the applied-job page."
+    "The repository is public and reviewers can access it directly without invitations. Submit this Word document through the applied-job page using its document-submission option."
 )
 para(
     "Free Render and Neon services may pause when idle, so initial access can take time. Measurement ingestion, teams, deletion, and password recovery are outside this MVP. The README documents photo credits, data assumptions, security tradeoffs, and deployment details."

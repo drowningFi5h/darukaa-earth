@@ -1,66 +1,99 @@
 # Darukaa Earth
 
-A nature-led geospatial workspace for carbon and biodiversity projects. React and Mapbox connect project boundaries to monthly observations, backed by FastAPI and PostgreSQL/PostGIS.
+Darukaa Earth is a small platform for managing carbon and biodiversity projects. You can create a project, draw its sites on a map, and open a site to see its measurements over time.
 
-## Review
+[Try the app](https://darukaa-earth-gbph.onrender.com) · [Source code](https://github.com/drowningFi5h/darukaa-earth)
 
-Live application: https://darukaa-earth-gbph.onrender.com
+Choose **Explore the platform** to try the read-only demo without registering. To create projects and save boundaries, make an account. If you're already signed in, the home page takes you back to your own workspace.
 
-Choose **Explore the platform** for the read-only demo. Register to create your own projects and draw site boundaries. The demo contains synthetic observations, not verified environmental outcomes. Deployment and verification status are recorded in `docs/SUBMISSION.md`.
+The app runs on free hosting, so the first request after a period of inactivity can take a little longer.
 
-## Architecture
+## What's included
 
-React + TypeScript + Vite serves an editorial landing page and dashboard. Tailwind CSS, customized shadcn-style Radix components, Motion, React Hook Form/Zod, TanStack Query, Lucide, and Chart.js support the interface. Mapbox and chart bundles load on demand. Fonts and optimized photographs are served locally.
+- Registration, login, logout, and session restoration.
+- A project dashboard with search and a map of saved sites.
+- Polygon drawing and editing, with a GeoJSON input option for keyboard use.
+- Site areas calculated by PostGIS, rather than trusting the browser estimate.
+- Monthly carbon and biodiversity charts, with a table showing the same values.
+- A read-only demo with three projects, six sites, and twelve months of observations per site.
 
-One Render Docker service serves the React build and FastAPI API from the same origin. FastAPI uses SQLAlchemy, GeoAlchemy2, Alembic, Argon2 password hashes, and JWT cookies. Neon stores durable PostgreSQL data with PostGIS. No application data relies on Render's temporary filesystem.
+The demo observations are made up. They exist to show how the application works, not to claim real carbon removals or ecological outcomes. New sites have no measurements until data is added.
 
-## Schema
+## How it fits together
 
-| Table        | Fields                                                  | Relationship         |
-| ------------ | ------------------------------------------------------- | -------------------- |
-| users        | UUID, unique email, name, password_hash, is_demo        | Owns projects        |
-| projects     | UUID, owner_id, name, description, category, created_at | Belongs to user      |
-| sites        | UUID, project_id, name, Polygon SRID 4326, area_ha      | Belongs to project   |
-| measurements | UUID, site_id, date, carbon_tco2e, species_count        | Unique site and date |
+The frontend uses React, TypeScript, and Vite. Mapbox GL JS handles the map and polygon drawing; Chart.js handles the charts. TanStack Query manages API requests and caching. The forms use React Hook Form and Zod, and the interface uses Tailwind CSS, Radix components, Motion, and Lucide icons.
 
-Geometry has a GiST index. Authoritative area uses `ST_Area(geometry::geography)/10000` in hectares. The API rejects invalid, empty, open, self-intersecting, out-of-range, or antimeridian-crossing polygons. Browser area is only an estimate.
+FastAPI serves the API and the built frontend from the same Render service. The database lives separately on Neon and uses PostgreSQL with PostGIS. SQLAlchemy and GeoAlchemy2 handle database access, and Alembic handles schema migrations. Saved projects do not depend on Render's temporary filesystem.
 
-## Run locally
+Map and chart code loads when it is needed. Fonts and compressed photographs are served with the app.
 
-Requires Node 22.12+, Python 3.12, uv, and Docker or an existing PostGIS database.
+## Database
+
+| Table          | Main fields                                           | Relationship         |
+| -------------- | ----------------------------------------------------- | -------------------- |
+| `users`        | id, email, name, password_hash, is_demo               | Owns projects        |
+| `projects`     | id, owner_id, name, description, category, created_at | Belongs to a user    |
+| `sites`        | id, project_id, name, geometry, area_ha               | Belongs to a project |
+| `measurements` | id, site_id, date, carbon_tco2e, species_count        | Belongs to a site    |
+
+Site boundaries are WGS84 polygons with a GiST spatial index. The server calculates hectares using `ST_Area(geometry::geography) / 10000`. It rejects empty, open, self-intersecting, out-of-range, and antimeridian-crossing polygons. A unique constraint on site and date prevents duplicate measurements.
+
+## Run it locally
+
+You'll need Node 22.12 or later, Python 3.12, uv, and either Docker or an existing PostGIS database.
+
+From the repository root:
 
 ```sh
 cp .env.example .env
-# Set JWT_SECRET (32+ characters), DEMO_PASSWORD (10+ characters), and VITE_MAPBOX_TOKEN.
 npm ci
 uv sync --project backend --frozen
 docker compose up -d db
+```
+
+On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if needed. Fill in `.env` before starting the backend:
+
+| Variable            | What to set                                                           |
+| ------------------- | --------------------------------------------------------------------- |
+| `DATABASE_URL`      | Your PostgreSQL connection string; use TLS for Neon                   |
+| `JWT_SECRET`        | A private random secret, at least 32 characters                       |
+| `DEMO_PASSWORD`     | A demo password of at least 10 characters                             |
+| `APP_ORIGIN`        | `http://localhost:5173` locally; the exact HTTPS origin in production |
+| `COOKIE_SECURE`     | `false` locally, `true` in production                                 |
+| `VITE_MAPBOX_TOKEN` | A public Mapbox token, restricted to the app's URLs                   |
+
+If you're using Neon, supply its connection string and skip the Docker command. Keep `.env` out of Git.
+
+Start the API:
+
+```sh
 cd backend
 uv run alembic upgrade head
 uv run python -m app.seed
 uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-In another terminal at the repository root, run `npm run dev` and open `http://localhost:5173`. Vite proxies `/api` to port 8000. Use localhost consistently because APP_ORIGIN protects mutations. On PowerShell use `Copy-Item .env.example .env` if preferred. With Neon, replace DATABASE_URL with its TLS connection string and omit Docker.
+In a second terminal, from the repository root:
 
-| Variable          | Purpose                                                    |
-| ----------------- | ---------------------------------------------------------- |
-| DATABASE_URL      | PostgreSQL URL, with TLS parameters for Neon               |
-| JWT_SECRET        | Private signing secret, minimum 32 characters              |
-| DEMO_PASSWORD     | Password for demo@darukaa.earth, minimum 10 characters     |
-| APP_ORIGIN        | Exact browser origin                                       |
-| COOKIE_SECURE     | false locally, true on public HTTPS                        |
-| VITE_MAPBOX_TOKEN | Public URL-restricted Mapbox token, provided at build time |
+```sh
+npm run dev
+```
 
-Keep .env out of Git. The seed is idempotent: it creates only demo-owned data and refreshes the demo password from configuration.
+Open `http://localhost:5173`. Use `localhost` consistently: the API checks the browser's origin for requests that change data. Vite forwards `/api` requests to the backend on port 8000.
 
-## API and security
+Running the seed command again is safe. It leaves registered users' projects alone and refreshes the demo password from the environment.
 
-`/api/docs` documents registration/login/logout/current user, demo entry, projects list/create/detail, project sites list/create, site read/update, analytics, and health. GeoJSON carries polygon geometry.
+## API and authentication
 
-Eight-hour JWT sessions use HttpOnly, SameSite=Lax cookies, Secure in production. Mutations require APP_ORIGIN. Every project/site query enforces ownership; foreign records return 404. Demo writes return 403. Database exceptions return a generic 503 without secrets. Logout clears the cookie. Password recovery, token revocation, and production-scale abuse prevention are outside this MVP; add an edge rate limiter before a broader launch.
+Open `/api/docs` for the API reference. It covers authentication, projects, sites, analytics, and the database health check. Site boundaries are sent as GeoJSON.
 
-## Checks and CI
+Passwords are hashed with Argon2. JWT sessions last eight hours and use HttpOnly cookies, with Secure enabled in production and SameSite protection. Requests that change data must come from `APP_ORIGIN`.
+
+Project and site requests check ownership. Requests for another user's records return 404, and writes from the demo account return 403. Logout clears the session cookie. Database errors return a generic response without exposing connection details.
+
+## Checks and deployment
+
+Run the code checks from the repository root:
 
 ```sh
 npm run lint
@@ -68,28 +101,51 @@ npm run format:check
 npm run build
 uv run --project backend ruff check backend
 uv run --project backend ruff format --check backend
-cd backend
+```
+
+Run the integration tests from `backend`:
+
+```sh
 uv run pytest -q
 ```
 
-Integration tests require actual PostGIS. Test-created records run inside a rollback transaction using savepoints. They cover sessions, persistence, geodesic area, access isolation, demo restrictions, invalid geometry, duplicate accounts, and origin checks. `scripts/browser_check.py` verifies the demo, charts, and responsive layouts using Python Playwright and captures screenshots. Run `npm run test:e2e`; set BASE_URL to test the deployed service. Browser checks use Microsoft Edge on Windows or installed Playwright Chromium elsewhere. `scripts/browser_write_check.py` exercises real drawing and persistence; `scripts/cleanup_browser_tests.py` removes only the specifically named verification accounts.
+These tests need a migrated PostGIS database. They use rollback transactions and savepoints to avoid leaving test records behind. They cover authentication, ownership, demo restrictions, site persistence, area calculations, invalid geometry, and origin protection.
 
-Husky installs during npm ci. lint-staged formats/lints staged frontend and documentation files and runs Ruff on staged Python. CI independently runs checks on PRs and main pushes using locked dependencies and a PostGIS service container. Only successful main-branch checks trigger deployment of the tested Git SHA via a deploy hook when configured, otherwise the authenticated Render deploy API. The job waits for the release to become live and fails if the build or startup fails.
+Browser checks use Python Playwright. They run with Microsoft Edge on Windows or installed Playwright Chromium elsewhere. Set `BASE_URL` to test the deployed app instead of localhost.
 
-## Deployment
+```sh
+npm run test:e2e
+uv run --project backend --with playwright python scripts/browser_write_check.py
+uv run --project backend --with playwright python scripts/home_navigation_check.py
+uv run --project backend --with playwright python scripts/hero_layout_check.py
+```
 
-Create a free Render Docker service connected to this private repo, or use render.yaml. Set the environment variables above, APP_ORIGIN to the actual HTTPS URL, COOKIE_SECURE=true, and the health path to /api/health. Disable Render auto-deploys to prevent bypassing CI. Configure GitHub secrets RENDER_API_KEY and RENDER_SERVICE_ID. An optional RENDER_DEPLOY_HOOK_URL is used in preference to the deploy API; the API credentials also verify deployment status. Render does not expose deploy-hook retrieval through its public API, so this submission uses the authenticated API.
+The write and navigation checks create temporary verification accounts. `scripts/cleanup_browser_tests.py` removes accounts matching those test names and their test-only projects. Browser checks currently run separately from CI.
 
-The Docker build receives VITE_MAPBOX_TOKEN as a build argument. Startup applies migrations and runs the idempotent seed before Uvicorn. A dedicated migration job would be needed for multiple instances. Free Render services sleep after inactivity; first access can take time. Neon can suspend idle compute too. Restrict the Mapbox token to the deployed URL and localhost. A missing map token shows an honest configuration state, never a fake basemap.
+Husky installs during `npm ci`. Before each commit, lint-staged runs Prettier and ESLint on changed frontend files and Ruff on changed Python files.
 
-## Data, design, and tradeoffs
+[The GitHub Actions workflow](.github/workflows/ci.yml) runs on pull requests and pushes to `main`. It checks formatting and linting, builds the frontend, applies migrations, and runs the backend tests against a PostGIS service container. A successful push to `main` deploys that exact commit to Render. The workflow waits for the release to become live and fails if the deployment fails.
 
-Three regional scenarios in India contain six illustrative polygons and 12 monthly observations each for 2025. Synthetic data makes the demo reproducible and avoids implying verified measurements. Newly created sites have no measurements. Measurement ingestion, deletion, teams, file uploads, carbon trading, password recovery, and 3D are deliberately omitted.
+### Hosting configuration
 
-The visual direction follows the supplied Verde reference: forest photography, cream/evergreen surfaces, serif headings, quiet controls, and a flat map. Charts have a tabular alternative; GeoJSON entry provides a keyboard alternative to drawing. Reduced-motion settings are respected.
+The app uses a Render Docker service and a Neon PostGIS database. `render.yaml` and the Dockerfile are included in the repository.
 
-Images use the Unsplash License: https://unsplash.com/license. Source image URLs are listed in /credits and scripts/download_assets.py. Photography illustrates the brand and does not depict sample sites. Cormorant Garamond and Manrope packages contain their font licenses. UI primitives follow shadcn/ui composition with Radix Dialog and Slot.
+Set the environment variables listed above in Render, use `/api/health` as the health-check path, and turn off Render's own automatic deployments so they cannot bypass CI. Set the GitHub Actions secrets `RENDER_API_KEY` and `RENDER_SERVICE_ID`.
 
-## Submission
+An optional `RENDER_DEPLOY_HOOK_URL` can trigger deployment instead. This setup uses Render's authenticated deploy API; the API credentials are also used to check release status.
 
-The private repository is https://github.com/drowningFi5h/darukaa-earth. Word and screenshot outputs are generated under output/submission and excluded from Git. Reviewer invitations and job-portal upload remain separate actions. See docs/SUBMISSION.md for verified completion status.
+The Mapbox token is supplied at build time. Startup applies migrations and runs the seed before starting Uvicorn. For a larger deployment with multiple instances, migrations should move to a separate job.
+
+## Demo data and trade-offs
+
+The demo uses illustrative scenarios in the Western Ghats, Sundarbans, and Kaziranga, with twelve monthly observations for 2025. A deterministic sample dataset makes the charts easy to review and avoids relying on an external measurement provider during the demo. The photographs are illustrative too; they are not photographs of the saved sites.
+
+The scope is project creation, site mapping, and reviewing measurements. There is no measurement-upload interface, team management, deletion flow, password recovery, or carbon trading. Token revocation and production-scale rate limiting would also need attention before a wider launch.
+
+The interface follows the supplied forest-and-cream design reference. It stays in 2D, respects reduced-motion preferences, and provides text alternatives for the charts and polygon input. Render and Neon can both pause after inactivity, which is the main trade-off of this hosting setup.
+
+## Credits and submission
+
+Photographs are used under the [Unsplash License](https://unsplash.com/license). Source URLs are listed on the app's `/credits` page and in `scripts/download_assets.py`. Cormorant Garamond and Manrope are bundled through their font packages, which include their licenses.
+
+The repository is public, so reviewers do not need invitations. The Word document and screenshots are in `output/submission` locally and are excluded from Git. The document includes the live URL, repository link, setup overview, and demo credentials. Uploading it through the applied-job page is still a separate step. See [the submission checklist](docs/SUBMISSION.md) for the delivery status.
